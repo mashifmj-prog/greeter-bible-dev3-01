@@ -1457,3 +1457,28 @@ const swipeCSS = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = swipeCSS;
 document.head.appendChild(styleSheet);
+
+// -------------------- WhatsApp Sharing --------------------
+function shareToWhatsApp() {
+  try {
+    const verseText = currentVerse;
+    const appUrl = "https://mashifmj-prog.github.io/greeter-bible-dev3/";
+    const shareText = `${verseText}\n\n- Shared via Greeter Bible App\n${appUrl}`;
+    
+    const encodedText = encodeURIComponent(shareText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    
+    // Open WhatsApp in new tab
+    window.open(whatsappUrl, '_blank');
+    
+    showSuccessMessage("Opening WhatsApp... 💚");
+    closeShareModal();
+  } catch (e) {
+    console.error("Error sharing to WhatsApp:", e);
+    // Fallback to regular sharing
+    copyVerseToClipboard();
+  }
+}
+
+// Add event listener in initializeEventListeners()
+document.getElementById('shareWhatsAppBtn')?.addEventListener('click', shareToWhatsApp);
