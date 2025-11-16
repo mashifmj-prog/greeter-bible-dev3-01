@@ -897,3 +897,63 @@ body.night .app-background {
     height: 45px !important;
   }
 }
+
+/* Enhanced Search Results */
+.search-result-item {
+  background: var(--white);
+  margin: var(--space-sm) 0;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-result-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-left-color: var(--secondary);
+}
+
+.verse-reference {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-xs);
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+
+.verse-category {
+  background: var(--primary);
+  color: var(--white);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.verse-book {
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+/* Search tips */
+.search-tips {
+  background: rgba(255, 255, 255, 0.9);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-sm);
+  font-size: 0.9rem;
+}
+
+.search-tips ul {
+  margin: var(--space-xs) 0;
+  padding-left: var(--space-lg);
+}
+
+.search-tips li {
+  margin: 4px 0;
+  color: var(--gray-600);
+}
