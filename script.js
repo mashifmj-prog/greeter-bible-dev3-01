@@ -1206,6 +1206,7 @@ function updateClock() {
 }
 
 // -------------------- Event Listeners --------------------
+// -------------------- Event Listeners --------------------
 function initializeEventListeners() {
   try {
     // Name input listener
@@ -1266,12 +1267,15 @@ function initializeEventListeners() {
       btn.addEventListener("click", closeShareModal);
     });
 
-    // Share option buttons
+    // Share option buttons - UPDATED WITH WHATSAPP
     document.getElementById('shareImageBtn')?.addEventListener('click', showImageOptions);
     document.getElementById('copyTextBtn')?.addEventListener('click', copyVerseToClipboard);
     
-    // NEW: Share app link button
+    // NEW: WhatsApp Share button - ADD THIS LINE
+    document.getElementById('shareWhatsAppBtn')?.addEventListener('click', shareToWhatsAppEnhanced);
+    
     document.getElementById('shareTextBtn')?.addEventListener('click', shareAppLink);
+    document.getElementById('closeModalBtn')?.addEventListener('click', closeShareModal);
 
     // Theme selection
     const themeOptions = document.querySelectorAll(".theme-option");
@@ -1295,6 +1299,20 @@ function initializeEventListeners() {
           modal.style.display = "none";
         }
       });
+    });
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Space bar for next verse
+      if (e.code === 'Space' && !e.target.matches('textarea, input')) {
+        e.preventDefault();
+        nextVerse();
+      }
+      // Escape key to close modals
+      if (e.code === 'Escape') {
+        closeShareModal();
+        closeSearchModal();
+      }
     });
 
   } catch (e) {
