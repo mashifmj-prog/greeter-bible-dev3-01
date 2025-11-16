@@ -821,10 +821,65 @@ function copyVerseToClipboard() {
   }
 }
 
+// -------------------- WhatsApp Sharing --------------------
+function shareToWhatsAppEnhanced() {
+  try {
+    if (!currentVerse) {
+      showSuccessMessage("No verse to share");
+      return;
+    }
+
+    const verseText = currentVerse;
+    const appUrl = "https://mashifmj-prog.github.io/greeter-bible-dev3/";
+    const shareText = `✨ Bible Inspiration ✨\n\n${verseText}\n\n- Shared via Greeter Bible App\n${appUrl}`;
+    
+    const encodedText = encodeURIComponent(shareText);
+    
+    // Multiple WhatsApp URL formats for better compatibility
+    const whatsappUrls = [
+      `https://wa.me/?text=${encodedText}`,
+      `https://api.whatsapp.com/send?text=${encodedText}`,
+      `whatsapp://send?text=${encodedText}`
+    ];
+    
+    // Try to open WhatsApp
+    let success = false;
+    
+    // Try deep link first (for mobile devices)
+    try {
+      window.location.href = whatsappUrls[2];
+      success = true;
+    } catch (e) {
+      // Fallback to web version
+      try {
+        window.open(whatsappUrls[0], '_blank', 'noopener,noreferrer');
+        success = true;
+      } catch (e2) {
+        // Final fallback
+        window.open(whatsappUrls[1], '_blank', 'noopener,noreferrer');
+        success = true;
+      }
+    }
+    
+    if (success) {
+      showSuccessMessage("Sharing to WhatsApp... 💚");
+      closeShareModal();
+    } else {
+      throw new Error("All WhatsApp methods failed");
+    }
+    
+  } catch (e) {
+    console.error("Error sharing to WhatsApp:", e);
+    // Ultimate fallback - copy to clipboard
+    showSuccessMessage("Opening WhatsApp failed. Verse copied to clipboard! 📋");
+    copyVerseToClipboard();
+  }
+}
+
 // Share app link for publicity
 function shareAppLink() {
   try {
-    const appUrl = "https://mashifmj-prog.github.io/greeter-bible-dev2/";
+    const appUrl = "https://mashifmj-prog.github.io/greeter-bible-dev3/";
     const shareText = `Check out this beautiful Bible app with daily verses, prayer journal, and more! ${appUrl}`;
     
     // Try native sharing first
@@ -955,13 +1010,13 @@ function generateVerseImage(theme) {
     
     // Calculate starting position to center text vertically
     const totalTextHeight = verseLines.length * lineHeight;
-    let y = (canvas.height - totalTextHeight) / 2 + 20; // Start a bit lower
-
+    let y = (canvas.height - totalTextHeight) / 2 + lineHeight / 2;
+    
     // Set font
     ctx.font = "bold 22px 'Inter', sans-serif";
-
-    verseLines.forEach((line, index) => {
-      ctx.fillText(line, canvas.width / 2, y);
+    
+    verseLines.forEach(line => {
+      ctx.fillText(line.trim(), canvas.width / 2, y);
       y += lineHeight;
     });
     
@@ -974,7 +1029,7 @@ function generateVerseImage(theme) {
     const includeAttribution = document.getElementById("includeAttribution").checked;
     if (includeAttribution) {
       ctx.font = "12px 'Inter', sans-serif";
-      ctx.fillText("mashifmj-prog.github.io/greeter-bible-dev2", canvas.width / 2, canvas.height - 20);
+      ctx.fillText("mashifmj-prog.github.io/greeter-bible-dev3", canvas.width / 2, canvas.height - 20);
     }
     
     return canvas.toDataURL("image/png");
@@ -1007,102 +1062,6 @@ function wrapText(context, text, maxWidth) {
   return lines;
 }
 
-function generateVerseImage(theme) {
-  try {
-    const canvas = document.getElementById("verseCanvas");
-    const ctx = canvas.getContext("2d");
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Set background based on theme
-    let gradient;
-    switch(theme) {
-      case "minimal":
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "#e0e0e0";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-        break;
-      case "dark":
-        gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, "#2c3e50");
-        gradient.addColorStop(1, "#34495e");
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        break;
-      case "sunrise":
-        gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, "#ff9a9e");
-        gradient.addColorStop(1, "#fecfef");
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        break;
-      case "ocean":
-        gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, "#4facfe");
-        gradient.addColorStop(1, "#00f2fe");
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        break;
-      case "sunset":
-        gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, "#fa709a");
-        gradient.addColorStop(1, "#fee140");
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        break;
-      case "night":
-        gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, "#2c3e50");
-        gradient.addColorStop(1, "#4ca1af");
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        break;
-    }
-    
-    // Set text color based on theme
-    const textColor = theme === "minimal" || theme === "sunrise" ? "#333333" : "#ffffff";
-    ctx.fillStyle = textColor;
-    ctx.textAlign = "center";
-    
-    // Add verse text with better word wrapping
-    const maxWidth = canvas.width - 100; // More padding
-    const lineHeight = 30; // Slightly more spacing
-    const verseLines = wrapText(ctx, currentVerse, maxWidth);
-    
-    // Calculate starting position to center text vertically
-    const totalTextHeight = verseLines.length * lineHeight;
-    let y = (canvas.height - totalTextHeight) / 2 + lineHeight / 2;
-    
-    // Set font
-    ctx.font = "bold 22px 'Inter', sans-serif";
-    
-    verseLines.forEach(line => {
-      ctx.fillText(line.trim(), canvas.width / 2, y);
-      y += lineHeight;
-    });
-    
-    // Add watermark
-    ctx.font = "14px 'Inter', sans-serif";
-    ctx.fillStyle = textColor + "80"; // 50% opacity
-    ctx.fillText("Shared via Greeter Bible App", canvas.width / 2, canvas.height - 40);
-    
-    // Add attribution link if enabled
-    const includeAttribution = document.getElementById("includeAttribution").checked;
-    if (includeAttribution) {
-      ctx.font = "12px 'Inter', sans-serif";
-      ctx.fillText("mashifmj-prog.github.io/greeter-bible-dev2", canvas.width / 2, canvas.height - 20);
-    }
-    
-    return canvas.toDataURL("image/png");
-  } catch (e) {
-    console.error("Error generating verse image:", e);
-    return null;
-  }
-}
-
 function previewImage() {
   try {
     const selectedTheme = document.querySelector(".theme-option.active")?.dataset.theme;
@@ -1116,18 +1075,6 @@ function previewImage() {
       behavior: 'smooth', 
       block: 'nearest' 
     });
-  } catch (e) {
-    console.error("Error previewing image:", e);
-  }
-}
-
-function previewImage() {
-  try {
-    const selectedTheme = document.querySelector(".theme-option.active")?.dataset.theme;
-    if (!selectedTheme) return;
-    
-    generateVerseImage(selectedTheme);
-    document.getElementById("imagePreview").classList.remove("hidden");
   } catch (e) {
     console.error("Error previewing image:", e);
   }
@@ -1205,7 +1152,65 @@ function updateClock() {
   }
 }
 
-// -------------------- Event Listeners --------------------
+// -------------------- Swipe Gestures --------------------
+function initializeSwipeGestures() {
+  const verseSection = document.querySelector('.verse-section');
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  if (!verseSection) return;
+
+  verseSection.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+
+  verseSection.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  });
+
+  function handleSwipe() {
+    const swipeThreshold = 50;
+    const diff = touchStartX - touchEndX;
+
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0) {
+        // Swipe left - next verse
+        nextVerse();
+        showSwipeFeedback('← Swiped for new verse');
+      } else {
+        // Swipe right - previous (optional, or share)
+        openShareModal();
+        showSwipeFeedback('→ Swiped to share');
+      }
+    }
+  }
+}
+
+function showSwipeFeedback(message) {
+  const feedback = document.createElement('div');
+  feedback.textContent = message;
+  feedback.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    z-index: 10000;
+    font-size: 14px;
+    animation: fadeInOut 2s ease-in-out;
+  `;
+  
+  document.body.appendChild(feedback);
+  
+  setTimeout(() => {
+    feedback.remove();
+  }, 2000);
+}
+
 // -------------------- Event Listeners --------------------
 function initializeEventListeners() {
   try {
@@ -1271,7 +1276,7 @@ function initializeEventListeners() {
     document.getElementById('shareImageBtn')?.addEventListener('click', showImageOptions);
     document.getElementById('copyTextBtn')?.addEventListener('click', copyVerseToClipboard);
     
-    // NEW: WhatsApp Share button - ADD THIS LINE
+    // NEW: WhatsApp Share button
     document.getElementById('shareWhatsAppBtn')?.addEventListener('click', shareToWhatsAppEnhanced);
     
     document.getElementById('shareTextBtn')?.addEventListener('click', shareAppLink);
@@ -1329,6 +1334,26 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updateClock, 1000);
     setInterval(updateGreeting, 60000);
     initializeEventListeners();
+    initializeSwipeGestures();
+    
+    // Add swipe CSS
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = `
+      @keyframes fadeInOut {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+      }
+      .verse-section {
+        cursor: grab;
+        user-select: none;
+      }
+      .verse-section:active {
+        cursor: grabbing;
+      }
+    `;
+    document.head.appendChild(styleSheet);
     
     // Add fade-in animation to container
     const container = document.querySelector('.container');
@@ -1346,157 +1371,3 @@ document.addEventListener('DOMContentLoaded', function() {
     console.error("Error during initialization:", e);
   }
 });
-
-// Share app link for publicity
-function shareAppLink() {
-  try {
-    const appUrl = "https://mashifmj-prog.github.io/greeter-bible-dev2/";
-    const shareText = `Check out this beautiful Bible app with daily verses, prayer journal, and more! ${appUrl}`;
-    
-    // Try native sharing first
-    if (navigator.share) {
-      navigator.share({
-        title: 'Greeter Bible App',
-        text: 'Beautiful Bible app with daily verses and prayer journal',
-        url: appUrl
-      }).then(() => {
-        showSuccessMessage("App shared successfully! 🚀");
-        closeShareModal();
-      }).catch(err => {
-        // Fallback to clipboard
-        fallbackShareAppLink(shareText);
-      });
-    } else {
-      // Fallback to clipboard
-      fallbackShareAppLink(shareText);
-    }
-  } catch (e) {
-    console.error("Error sharing app link:", e);
-    fallbackShareAppLink(shareText);
-  }
-}
-
-function fallbackShareAppLink(shareText) {
-  navigator.clipboard.writeText(shareText).then(() => {
-    showSuccessMessage("App link copied to clipboard! 📋\nPaste it anywhere to share!");
-    closeShareModal();
-  }).catch(err => {
-    // Ultimate fallback
-    const textArea = document.createElement('textarea');
-    textArea.value = shareText;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-    showSuccessMessage("App link copied to clipboard! 📋\nPaste it anywhere to share!");
-    closeShareModal();
-  });
-}
-
-// -------------------- Swipe Gestures --------------------
-function initializeSwipeGestures() {
-  const verseSection = document.querySelector('.verse-section');
-  let touchStartX = 0;
-  let touchEndX = 0;
-
-  if (!verseSection) return;
-
-  verseSection.addEventListener('touchstart', e => {
-    touchStartX = e.changedTouches[0].screenX;
-  });
-
-  verseSection.addEventListener('touchend', e => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
-  });
-
-  function handleSwipe() {
-    const swipeThreshold = 50;
-    const diff = touchStartX - touchEndX;
-
-    if (Math.abs(diff) > swipeThreshold) {
-      if (diff > 0) {
-        // Swipe left - next verse
-        nextVerse();
-        showSwipeFeedback('← Swiped for new verse');
-      } else {
-        // Swipe right - previous (optional, or share)
-        openShareModal();
-        showSwipeFeedback('→ Swiped to share');
-      }
-    }
-  }
-}
-
-function showSwipeFeedback(message) {
-  const feedback = document.createElement('div');
-  feedback.textContent = message;
-  feedback.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.8);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-    z-index: 10000;
-    font-size: 14px;
-    animation: fadeInOut 2s ease-in-out;
-  `;
-  
-  document.body.appendChild(feedback);
-  
-  setTimeout(() => {
-    feedback.remove();
-  }, 2000);
-}
-
-// Add this CSS for swipe animation
-const swipeCSS = `
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-  20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-}
-
-.verse-section {
-  cursor: grab;
-  user-select: none;
-}
-
-.verse-section:active {
-  cursor: grabbing;
-}
-`;
-
-// Inject swipe CSS
-const styleSheet = document.createElement('style');
-styleSheet.textContent = swipeCSS;
-document.head.appendChild(styleSheet);
-
-// -------------------- WhatsApp Sharing --------------------
-function shareToWhatsApp() {
-  try {
-    const verseText = currentVerse;
-    const appUrl = "https://mashifmj-prog.github.io/greeter-bible-dev3/";
-    const shareText = `${verseText}\n\n- Shared via Greeter Bible App\n${appUrl}`;
-    
-    const encodedText = encodeURIComponent(shareText);
-    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
-    
-    // Open WhatsApp in new tab
-    window.open(whatsappUrl, '_blank');
-    
-    showSuccessMessage("Opening WhatsApp... 💚");
-    closeShareModal();
-  } catch (e) {
-    console.error("Error sharing to WhatsApp:", e);
-    // Fallback to regular sharing
-    copyVerseToClipboard();
-  }
-}
-
-// Add event listener in initializeEventListeners()
-document.getElementById('shareWhatsAppBtn')?.addEventListener('click', shareToWhatsApp);
